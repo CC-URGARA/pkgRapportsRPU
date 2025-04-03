@@ -1,0 +1,4 @@
+Mettre les fonctions
+Mettre les fonds d'image
+Mettre les images ressources ?
+Créer une fonction qui fait la page de garde
