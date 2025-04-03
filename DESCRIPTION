@@ -3,8 +3,11 @@ Title: Fonctions rapports RPU
 Version: 0.0.0.9000
 Authors@R: 
     person("Clément", "Claustre", , "clement.claustre@urgences-ara.fr", role = c("aut", "cre"))
-Description: Contient toutes les fonctions utilisées dans les rapports RPU quadri, annuel, ars etc..
+Description: Contient toutes les fonctions utilisées dans les rapports RPU
+    quadri, annuel, ars etc..
 License: MIT + file LICENSE
+URL: https://github.com/CC-URGARA/pkgRapportsRPU
+BugReports: https://github.com/CC-URGARA/pkgRapportsRPU/issues
 Imports: 
     dplyr,
     forcats,
@@ -12,14 +15,14 @@ Imports:
     ggpubr,
     gridExtra,
     kableExtra,
+    lubridate,
     png,
     rUrgAra,
     scales,
     stats,
     stringr,
+    sysfonts,
     tidyr
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.2
-URL: https://github.com/CC-URGARA/pkgRapportsRPU
-BugReports: https://github.com/CC-URGARA/pkgRapportsRPU/issues

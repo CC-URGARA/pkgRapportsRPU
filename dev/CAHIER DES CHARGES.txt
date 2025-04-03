@@ -1,4 +1,6 @@
 Mettre les fonctions
-Mettre les fonds d'image
 Mettre les images ressources ?
-Créer une fonction qui fait la page de garde
+
+BLOQUANT :
+fct_make_barplot_age
+

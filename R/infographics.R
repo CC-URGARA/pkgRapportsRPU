@@ -19,18 +19,18 @@ fct_infographic_resume <- function(base, pediatrique = FALSE, tab_activite, type
   #indicateurs :
   if(pediatrique){
     if(type == "Etab"){
-      img <- readPNG("../images/infographie rapports quadrimestriels_sans donnees_pedia_V2.png")
+      img <- readPNG(system.file("img/infog_CC_vierge_ped_etab.png", package = "pkgRapportsRPU"))
       part_age_var = paste0(round(mean(base$age_inf2, na.rm = T)*100), "%")
     } else if(type == "Groupe") {
-      img <- readPNG("../images/infographie rapports quadrimestriels_sans donnees_region_pedia_V2.png")
+      img <- readPNG(system.file("img/infog_CC_vierge_ped_groupe.png", package = "pkgRapportsRPU"))
       part_age_var = paste0(round(mean(base$age_inf2, na.rm = T)*100), "%")
     }
   } else if(!pediatrique){
     if(type == "Etab"){
-      img <- readPNG("../images/infographie rapports quadrimestriels_sans donnees.png")
+      img <- readPNG(system.file("img/infog_CC_vierge_general_etab.png", package = "pkgRapportsRPU"))
       part_age_var = paste0(round(mean(base$age_geq75, na.rm = T)*100), "%")
     } else if(type == "Groupe") {
-      img <- readPNG("../images/infographie rapports quadrimestriels_sans donnees_region.png")
+      img <- readPNG(system.file("img/infog_CC_vierge_general_groupe.png", package = "pkgRapportsRPU"))
       part_age_var = paste0(round(mean(base$age_geq75, na.rm = T)*100), "%")
     }
   } else stop("erreur type ou pedia")

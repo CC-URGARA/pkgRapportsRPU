@@ -60,7 +60,7 @@ fct_duree_passage <- function(base_groupe, titre_tab, excl_orient_non_pec){
     filter(etab_actif %in% "1") %>%
     summarise(Groupe = "Service",
               N = fct_f_big(n()),
-              Médiane = fct_min_as_hour(round(quantile(duree_passage_min, na.rm = T, probs = 0.5))),
+              "M\u00e9diane" = fct_min_as_hour(round(quantile(duree_passage_min, na.rm = T, probs = 0.5))),
               "Q25%" = fct_min_as_hour(round(quantile(duree_passage_min, na.rm = T, probs = 0.25))),
               "Q75%" = fct_min_as_hour(round(quantile(duree_passage_min, na.rm = T, probs = 0.75))),
               Minimum = fct_min_as_hour(round(min(duree_passage_min, na.rm = T))),
@@ -73,7 +73,7 @@ fct_duree_passage <- function(base_groupe, titre_tab, excl_orient_non_pec){
   tab_group <- base_groupe %>%
     summarise(Groupe = "Groupe",
               N = fct_f_big(n()),
-              Médiane = fct_min_as_hour(round(quantile(duree_passage_min, na.rm = T, probs = 0.5))),
+              "M\u00e9diane" = fct_min_as_hour(round(quantile(duree_passage_min, na.rm = T, probs = 0.5))),
               "Q25%" = fct_min_as_hour(round(quantile(duree_passage_min, na.rm = T, probs = 0.25))),
               "Q75%" = fct_min_as_hour(round(quantile(duree_passage_min, na.rm = T, probs = 0.75))),
               Minimum = fct_min_as_hour(round(min(duree_passage_min, na.rm = T))),
