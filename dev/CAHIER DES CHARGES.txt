@@ -1,6 +1,0 @@
-Mettre les fonctions
-Mettre les images ressources ?
-
-BLOQUANT :
-fct_make_barplot_age
-

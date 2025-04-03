@@ -19,5 +19,7 @@ globalVariables(unique(c(
   # fct_infographic_resume:
   "activite", "size", "x",
   # fct_tab_diag:
-  "DP_lab", "DP_recod", "n_p"
+  "DP_lab", "DP_recod", "n_p",
+  # fct_make_barplot_age:
+  "age", "age_geq75", "age_geq75_adult"
 )))

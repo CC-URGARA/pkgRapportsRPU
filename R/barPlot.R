@@ -81,78 +81,89 @@ fct_make_barplot <- function(base_groupe, var_interet,
 }
 
 
-# fct_make_barplot_age <- function(base_groupe, titre_tab = ""){
-#   #Calcul de la var d'intérêt (age >= 75 parmi les adultes)
-#   base_groupe = base_groupe %>%
-#     mutate(age_geq75_adult = if_else(as.numeric(age) >= 18, age_geq75, NA))
-#
-#   #récupération nom etab/groupe
-#   lab_etab <- unique(base_groupe$NOM_ETAB[base_groupe$etab_actif %in% "1"])
-#   lab_groupe <- unique(base_groupe$group)
-#
-#   #calcule des chiffres du graph
-#   tab_plot <- base_groupe %>%
-#     mutate(age_geq75_adult = if_else(as.numeric(age) >= 18, age_geq75, NA)) %>%
-#     group_by(NOM_ETAB, etab_actif, .drop = F) %>%
-#     summarise(y = mean(as.numeric(age_geq75_adult), na.rm = T),
-#               n_noNA = sum(!is.na(age_geq75_adult)),
-#               n = sum(as.numeric(age_geq75_adult), na.rm = T)) %>%
-#     ungroup() %>%
-#     mutate(NOM_ETAB = reorder(NOM_ETAB, y),
-#            effectif_bas = n_noNA < 30)
-#
-#   mean_groupe = mean(base_groupe$age_geq75_adult, na.rm = T)
-#
-#   #réalisation du graph
-#   plot <- ggplot(tab_plot, aes(x = NOM_ETAB, y = y, fill = etab_actif)) +
-#     geom_col(width = 0.75, aes(alpha = effectif_bas)) +
-#     geom_hline(aes(yintercept = mean_groupe, linetype = "Moyenne du groupe"), linewidth = 1.5, color = col_glob) +
-#     scale_y_continuous(name = "Patients adultes > 75 ans (%)", labels = percent, breaks = pretty) +
-#     scale_x_discrete(name = "") +
-#     scale_fill_manual(name = "", values = c("0" = col_glob, "1" = col_etab)) +
-#     scale_alpha_manual(values = c("TRUE" = 0.25, "FALSE" = 1)) +
-#     scale_linetype_manual(name = "", values = c("Moyenne du groupe" = 4)) +
-#     guides(fill = "none", alpha = "none") +
-#     theme_pubclean() +
-#     theme(axis.text.x = element_blank(),
-#           axis.ticks.x = element_blank(),
-#           legend.key = element_blank())
-#
-#   #Calcule des chiffres de la table
-#   tab_etab <- base_groupe %>%
-#     filter(etab_actif %in% "1") %>%
-#     # select(var_interet = age_geq75_adult) %>%
-#     summarise(Groupe = "Service",
-#               "Nombre de passages" = format(n(), big.mark = " "),
-#               "Patients âgés" = paste0(format(sum(age_geq75, na.rm = T), big.mark = " "), " (",
-#                                        round(mean(age_geq75, na.rm = T)*100, 1), "%)"),
-#
-#               "Nombre de passages adultes" = format(sum(as.numeric(age) >= 18, na.rm = T), big.mark = " "),
-#               "Patients âgés parmi les adultes" = paste0(format(sum(age_geq75_adult, na.rm = T), big.mark = " "), " (",
-#                                                          round(mean(age_geq75_adult, na.rm = T)*100, 1), "%)"))
-#
-#   tab_group <- base_groupe %>%
-#     # select(var_interet = all_of(var_interet)) %>%
-#     summarise(Groupe = "Groupe",
-#               "Nombre de passages" = format(n(), big.mark = " "),
-#               "Patients âgés" = paste0(format(sum(age_geq75, na.rm = T), big.mark = " "), " (",
-#                                        round(mean(age_geq75, na.rm = T)*100, 1), "%)"),
-#
-#               "Nombre de passages adultes" = format(sum(as.numeric(age) >= 18, na.rm = T), big.mark = " "),
-#               "Patients âgés parmi les adultes" = paste0(format(sum(age_geq75_adult, na.rm = T), big.mark = " "), " (",
-#                                                          round(mean(age_geq75_adult, na.rm = T)*100, 1), "%)"))
-#
-#
-#   tab_glob <- bind_rows(tab_etab, tab_group) %>%
-#     kbl(caption = titre_tab, col.names = c("", "Nombre de\npassages", "Patients âgés", "Nombre de\npassages adultes", "Patients âgés parmi\nles adultes"),
-#         align = "c", format = "latex") %>%
-#     kable_classic_2() %>%
-#     kable_styling(latex_options = c("HOLD_position"))
-#
-#
-#   return(list(plot = plot,
-#               data = tab_glob))
-# }
+#' barplot simple sur l'âge
+#'
+#' @param base_groupe RPU du groupe dont l'étab actif (var etab_actif)
+#' @param titre_tab titre de la table
+#'
+#' @returns Un plot et une table
+#' @export
+#'
+#' @import dplyr
+#' @import ggplot2
+#' @importFrom kableExtra kbl kable_classic_2 kable_styling
+#' @importFrom ggpubr theme_pubclean
+#' @importFrom stats reorder
+fct_make_barplot_age <- function(base_groupe, titre_tab = ""){
+  #Calcul de la var d'intérêt (age >= 75 parmi les adultes)
+  base_groupe = base_groupe %>%
+    mutate(age_geq75_adult = if_else(as.numeric(age) >= 18, age_geq75, NA))
+
+  #récupération nom etab/groupe
+  lab_etab <- unique(base_groupe$NOM_ETAB[base_groupe$etab_actif %in% "1"])
+  lab_groupe <- unique(base_groupe$group)
+
+  #calcule des chiffres du graph
+  tab_plot <- base_groupe %>%
+    mutate(age_geq75_adult = if_else(as.numeric(age) >= 18, age_geq75, NA)) %>%
+    group_by(NOM_ETAB, etab_actif, .drop = F) %>%
+    summarise(y = mean(as.numeric(age_geq75_adult), na.rm = T),
+              n_noNA = sum(!is.na(age_geq75_adult)),
+              n = sum(as.numeric(age_geq75_adult), na.rm = T)) %>%
+    ungroup() %>%
+    mutate(NOM_ETAB = reorder(NOM_ETAB, y),
+           effectif_bas = n_noNA < 30)
+
+  mean_groupe = mean(base_groupe$age_geq75_adult, na.rm = T)
+
+  #réalisation du graph
+  plot <- ggplot(tab_plot, aes(x = NOM_ETAB, y = y, fill = etab_actif)) +
+    geom_col(width = 0.75, aes(alpha = effectif_bas)) +
+    geom_hline(aes(yintercept = mean_groupe, linetype = "Moyenne du groupe"), linewidth = 1.5, color = col_glob) +
+    scale_y_continuous(name = "Patients adultes > 75 ans (%)", labels = percent, breaks = pretty) +
+    scale_x_discrete(name = "") +
+    scale_fill_manual(name = "", values = c("0" = col_glob, "1" = col_etab)) +
+    scale_alpha_manual(values = c("TRUE" = 0.25, "FALSE" = 1)) +
+    scale_linetype_manual(name = "", values = c("Moyenne du groupe" = 4)) +
+    guides(fill = "none", alpha = "none") +
+    theme_pubclean() +
+    theme(axis.text.x = element_blank(),
+          axis.ticks.x = element_blank(),
+          legend.key = element_blank())
+
+  #Calcule des chiffres de la table
+  tab_etab <- base_groupe %>%
+    filter(etab_actif %in% "1") %>%
+    summarise(Groupe = "Service",
+              "Nombre de passages" = format(n(), big.mark = " "),
+              "Patients \u00e2g\u00e9s" = paste0(format(sum(age_geq75, na.rm = T), big.mark = " "), " (",
+                                       round(mean(age_geq75, na.rm = T)*100, 1), "%)"),
+
+              "Nombre de passages adultes" = format(sum(as.numeric(age) >= 18, na.rm = T), big.mark = " "),
+              "Patients \u00e2g\u00e9s parmi les adultes" = paste0(format(sum(age_geq75_adult, na.rm = T), big.mark = " "), " (",
+                                                         round(mean(age_geq75_adult, na.rm = T)*100, 1), "%)"))
+
+  tab_group <- base_groupe %>%
+    summarise(Groupe = "Groupe",
+              "Nombre de passages" = format(n(), big.mark = " "),
+              "Patients \u00e2g\u00e9s" = paste0(format(sum(age_geq75, na.rm = T), big.mark = " "), " (",
+                                       round(mean(age_geq75, na.rm = T)*100, 1), "%)"),
+
+              "Nombre de passages adultes" = format(sum(as.numeric(age) >= 18, na.rm = T), big.mark = " "),
+              "Patients \u00e2g\u00e9s parmi les adultes" = paste0(format(sum(age_geq75_adult, na.rm = T), big.mark = " "), " (",
+                                                         round(mean(age_geq75_adult, na.rm = T)*100, 1), "%)"))
+
+
+  tab_glob <- bind_rows(tab_etab, tab_group) %>%
+    kbl(caption = titre_tab, col.names = c("", "Nombre de\npassages", "Patients \u00e2g\u00e9s", "Nombre de\npassages adultes", "Patients \u00e2g\u00e9s parmi\nles adultes"),
+        align = "c", format = "latex") %>%
+    kable_classic_2() %>%
+    kable_styling(latex_options = c("HOLD_position"))
+
+
+  return(list(plot = plot,
+              data = tab_glob))
+}
 
 
 #' barplot bicolor
