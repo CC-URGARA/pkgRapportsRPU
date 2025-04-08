@@ -21,5 +21,13 @@ globalVariables(unique(c(
   # fct_tab_diag:
   "DP_lab", "DP_recod", "n_p",
   # fct_make_barplot_age:
-  "age", "age_geq75", "age_geq75_adult"
+  "age", "age_geq75", "age_geq75_adult",
+  # fct_calc_indic_evol:
+  "annee", "CCMU_1_2", "DP_type", "ENTREE", "group", "hospit", "MODE_SORTIE", "n_jours_an", "n_RPU", "n_RPU_quotidien", "nuit", "SORTIE", "TRANSPORT", "weekend",
+  # fct_infographic_evol:
+  "Indicateur", "lab_clean", "val_indicateur_n2",
+  # fct_make_tab_evol_RPU:
+  "evol", "evol_type", "Indicateur", "signe", "suffix_lab", "val_indicateur_n1", "val_indicateur_n2",
+  # fct_nb_presents:
+  "H_ENTREE", "H_SORTIE", "nb_jours_present"
 )))
