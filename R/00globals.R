@@ -1,6 +1,7 @@
 #couleurs utilisées dans la librairie
-col_glob = "#93CDDD"
+col_glob = "#125486"#"#93CDDD"
 col_etab = "#e91b1d"
+col_secblue = "#0070C0"
 
 #Variables globales utilisées dans des évaluations non standards
 globalVariables(unique(c(

@@ -6,6 +6,7 @@
 #' @param borne_max Fin de la période
 #' @param duree_max Durée maximale autorisée
 #' @param pedia booléen : rapport pédia ou non
+#' @param outlier_handling How should values above max_LOS be handled. If outlier_handling = "cap" (default), these values will be replaced by max_LOS. If outlier_handling = "remove", these values will be removed_handling
 #'
 #' @returns un plot et 2 table et 2 infos pour l'infographie
 #' @export
@@ -16,12 +17,15 @@
 #'
 #'
 fct_diagramme_charge <- function(base_etab, base_groupe, borne_min, borne_max,
-                                 duree_max, pedia){
+                                 duree_max, pedia, outlier_handling){
   res_whale_etab = rUrgAra::plot_diag_charge(base_etab, entry = "ENTREE", exit = "SORTIE",
-                                             from = borne_min, to = borne_max, max_LOS = duree_max)
+                                             from = borne_min, to = borne_max, max_LOS = duree_max,
+                                             outlier_handling = outlier_handling
+                                             )
   res_whale_groupe <- rUrgAra::plot_diag_charge(base_groupe, entry = "ENTREE", exit = "SORTIE",
                                                 strata = "NOM_ETAB",
-                                                from = borne_min, to = borne_max, max_LOS = duree_max)
+                                                from = borne_min, to = borne_max, max_LOS = duree_max,
+                                                outlier_handling = outlier_handling)
 
   n_jours <- res_whale_etab$tab$n_days[1]
 

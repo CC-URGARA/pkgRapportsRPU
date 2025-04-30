@@ -4,12 +4,7 @@
 \alias{fct_make_tab_evol_RPU}
 \title{table evolution infographie}
 \usage{
-fct_make_tab_evol_RPU(
-  RPU_n1,
-  RPU_n2,
-  group_by = "etab",
-  excl_orient_non_pec = TRUE
-)
+fct_make_tab_evol_RPU(RPU_n1, RPU_n2, group_by = "etab", excl_orient_non_pec)
 }
 \arguments{
 \item{RPU_n1}{RPU de l'année de référence}

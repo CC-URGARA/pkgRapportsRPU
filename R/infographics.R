@@ -4,6 +4,7 @@
 #' @param pediatrique Booléen : Rapport pédiatrique T/F
 #' @param tab_activite Valeur retournée par la fonction
 #' @param type character : Etab ou Groupe selon si la base fournie est celle du groupe ou de l'étab
+#' @param excl_orient_non_pec Booléen : Les fugues, réorientations, partis sans attendre et sorties contre avis doivent-il être exclus des délais et diag ?
 #'
 #' @returns Un graphique
 #' @export
@@ -14,8 +15,18 @@
 #' @importFrom ggpubr background_image
 #' @importFrom stats median
 #'
-fct_infographic_resume <- function(base, pediatrique = FALSE, tab_activite, type){
+fct_infographic_resume <- function(base, pediatrique = FALSE, tab_activite, type,
+                                   excl_orient_non_pec){
   if(!type %in% c("Etab", "Groupe")){stop("Type doit \u00eatre Etab ou Groupe")}
+
+  #Exclusion des REO/SCAM/PSO/FUGUE si necessaire
+  if(excl_orient_non_pec){
+    base = base %>%
+      mutate(duree_passage_min = if_else(ORIENTATION %in% c("FUGUE", "REO", "PSA", "SCAM"),
+                                         NA_real_, duree_passage_min)
+      )
+  }
+
   #indicateurs :
   if(pediatrique){
     if(type == "Etab"){
@@ -135,7 +146,7 @@ fct_infographic_evol = function(RPU_evol){
 #'
 #' @import dplyr
 #'
-fct_make_tab_evol_RPU <- function(RPU_n1, RPU_n2, group_by = "etab", excl_orient_non_pec = TRUE){
+fct_make_tab_evol_RPU <- function(RPU_n1, RPU_n2, group_by = "etab", excl_orient_non_pec){
   #Calcul des indicateurs tracés pour l'évolution
   tab_indic_evol_n1 = fct_calc_indic_evol(RPU = RPU_n1, group_by = group_by,
                                           excl_orient_non_pec = excl_orient_non_pec)
@@ -203,7 +214,7 @@ fct_calc_indic_evol = function(RPU, group_by = "etab", excl_orient_non_pec = TRU
             "DP_type", "annee", "NOM_ETAB", "COD_FIN") %in% names(RPU))){
     stop('Les colonnes "SORTIE", "ENTREE", "MODE_SORTIE", "ORIENTATION", "hospit", "duree_passage_min", "SEXE", "age",
          "age_inf2", "age_inf15", "age_geq75", "nuit", "weekend", "TRANSPORT", "CCMU_1_2",
-         "DP_type", "annee", "NOM_ETAB", "COD_FIN" doivent être présentes dans la base RPU')
+         "DP_type", "annee", "NOM_ETAB", "COD_FIN" doivent etre presentes dans la base RPU')
   }
 
   if(!group_by %in% c("etab", "group", "none")){

@@ -15,6 +15,7 @@
 #' @import ggplot2
 #' @importFrom kableExtra kbl kable_classic_2 kable_styling
 #' @importFrom ggpubr theme_pubclean
+#' @importFrom scales label_percent
 #' @importFrom stats reorder
 fct_make_barplot <- function(base_groupe, var_interet,
                              ylab = "", titre_graph = "",
@@ -28,7 +29,9 @@ fct_make_barplot <- function(base_groupe, var_interet,
     group_by(NOM_ETAB, etab_actif, .drop = F) %>%
     summarise(y = mean(as.numeric(var_interet), na.rm = T),
               n_noNA = sum(!is.na(var_interet)),
-              n = sum(as.numeric(var_interet), na.rm = T)) %>%
+              n = sum(as.numeric(var_interet), na.rm = T),
+              y = if_else(n_noNA == 0, 0, y, missing = 0)#Si aucune données on met 0
+              ) %>%
     ungroup() %>%
     mutate(NOM_ETAB = reorder(NOM_ETAB, y),
            effectif_bas = n_noNA < 30)
@@ -39,12 +42,12 @@ fct_make_barplot <- function(base_groupe, var_interet,
   #réalisation du graph
   plot <- ggplot(tab_plot, aes(x = NOM_ETAB, y = y, fill = etab_actif)) +
     geom_col(width = 0.75, aes(alpha = effectif_bas)) +
-    geom_hline(aes(yintercept = mean_groupe, linetype = "Moyenne du groupe"), linewidth = 1.5, color = col_glob) +
-    scale_y_continuous(name = ylab, labels = percent, breaks = pretty) +
-    scale_x_discrete(name = "") +
+    geom_hline(aes(yintercept = mean_groupe, linetype = "Moyenne du groupe"), linewidth = 1, color = col_secblue) +
+    scale_y_continuous(name = ylab, labels = label_percent(), breaks = pretty) +
+    scale_x_discrete(name = "Etablissement") +
     scale_fill_manual(name = "", values = c("0" = col_glob, "1" = col_etab)) +
     scale_alpha_manual(values = c("TRUE" = 0.25, "FALSE" = 1)) +
-    scale_linetype_manual(name = "", values = c("Moyenne du groupe" = 4)) +
+    scale_linetype_manual(name = "", values = c("Moyenne du groupe" = 2)) +
     labs(title = titre_graph) +
     guides(fill = "none", alpha = "none") +
     theme_pubclean() +
@@ -119,12 +122,12 @@ fct_make_barplot_age <- function(base_groupe, titre_tab = ""){
   #réalisation du graph
   plot <- ggplot(tab_plot, aes(x = NOM_ETAB, y = y, fill = etab_actif)) +
     geom_col(width = 0.75, aes(alpha = effectif_bas)) +
-    geom_hline(aes(yintercept = mean_groupe, linetype = "Moyenne du groupe"), linewidth = 1.5, color = col_glob) +
+    geom_hline(aes(yintercept = mean_groupe, linetype = "Moyenne du groupe"), linewidth = 1, color = col_secblue) +
     scale_y_continuous(name = "Patients adultes > 75 ans (%)", labels = percent, breaks = pretty) +
-    scale_x_discrete(name = "") +
+    scale_x_discrete(name = "Etablissement") +
     scale_fill_manual(name = "", values = c("0" = col_glob, "1" = col_etab)) +
     scale_alpha_manual(values = c("TRUE" = 0.25, "FALSE" = 1)) +
-    scale_linetype_manual(name = "", values = c("Moyenne du groupe" = 4)) +
+    scale_linetype_manual(name = "", values = c("Moyenne du groupe" = 2)) +
     guides(fill = "none", alpha = "none") +
     theme_pubclean() +
     theme(axis.text.x = element_blank(),
@@ -245,7 +248,7 @@ fct_make_bardodge <- function(base_etab, base_groupe, var_interet, label_var_int
     scale_fill_manual(name = "", values = vec_color_fill) + #c(col_glob, col_etab)) +#suppose que les groupes sont dans l'ordre alphabetique
     scale_y_continuous(name = "Pourcentage de patients", breaks = pretty,
                        labels = percent_format(accuracy = 1)) +
-    scale_x_discrete(name = "", expand = c(0.1, 0)) +
+    scale_x_discrete(name = label_var_interet, expand = c(0.1, 0)) +
     coord_cartesian(expand = T) +
     guides(fill = guide_legend(nrow = 1)) +
     labs(title = titre) +
@@ -319,6 +322,7 @@ fct_make_bardodge <- function(base_etab, base_groupe, var_interet, label_var_int
 #' @param na.rm Booléen : Retirer les données manquantes
 #' @param pedia Booléen : le rapport est-il pédiatrique
 #' @param excl_orient_non_pec Booléen : Les patients réorientés/fugues/sortie sans ou contre avis médical doivent-ils être exclus ?
+#' @param palette_color_manual palette de couleur donnée à "value" dans "scale_fill_manual"
 #'
 #' @returns un plot et deux tables
 #' @export
@@ -331,7 +335,8 @@ fct_make_bardodge <- function(base_etab, base_groupe, var_interet, label_var_int
 #' @importFrom stringr str_remove_all
 #'
 fct_make_barfill <- function(base_etab, base_groupe, var_interet, label_var_interet, titre = "",
-                             make_table = FALSE, na.rm = FALSE, pedia, excl_orient_non_pec = F){
+                             make_table = FALSE, na.rm = FALSE, pedia, excl_orient_non_pec = F,
+                             palette_color_manual = NULL){
   # renommage de la variable à ploter afin de pouvoir l'invoquer plus facilement par la suite
   base_groupe <- base_groupe %>%
     rename(var_interet = all_of(var_interet)) %>%
@@ -377,8 +382,6 @@ fct_make_barfill <- function(base_etab, base_groupe, var_interet, label_var_inte
     scale_fill_manual(values = pal_UrgAra(),
                       limits = levels(tab_plot$var_interet),
                       name = label_var_interet) +
-    # rUrgAra::scale_fill_UrgAra(limits = levels(tab_plot$var_interet),
-    #                            name = label_var_interet) +
     scale_y_continuous(name = "Pourcentage de patients", breaks = seq(0, 1, by = 0.1), labels = percent_format(accuracy = 1, suffix = "")) +
     scale_x_discrete(name = "") +
     coord_flip() +
@@ -389,6 +392,11 @@ fct_make_barfill <- function(base_etab, base_groupe, var_interet, label_var_inte
           axis.text.y = element_text(hjust = 0.5),
           panel.background = element_rect(fill='transparent'),
           plot.background = element_rect(fill='transparent', color=NA)) #transparent plot bg
+
+  if(!is.null(palette_color_manual)){#Changement de la palette de couleur pour une manuelle
+    plot = plot + scale_fill_manual(name = label_var_interet,
+                                    values = palette_color_manual)
+  }
 
   #table retournée à la fin
   if(!make_table){

@@ -10,7 +10,8 @@ fct_diagramme_charge(
   borne_min,
   borne_max,
   duree_max,
-  pedia
+  pedia,
+  outlier_handling
 )
 }
 \arguments{
@@ -25,6 +26,8 @@ fct_diagramme_charge(
 \item{duree_max}{Durée maximale autorisée}
 
 \item{pedia}{booléen : rapport pédia ou non}
+
+\item{outlier_handling}{How should values above max_LOS be handled. If outlier_handling = "cap" (default), these values will be replaced by max_LOS. If outlier_handling = "remove", these values will be removed_handling}
 }
 \value{
 un plot et 2 table et 2 infos pour l'infographie

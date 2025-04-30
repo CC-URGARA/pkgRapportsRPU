@@ -13,7 +13,8 @@ fct_make_barfill(
   make_table = FALSE,
   na.rm = FALSE,
   pedia,
-  excl_orient_non_pec = F
+  excl_orient_non_pec = F,
+  palette_color_manual = NULL
 )
 }
 \arguments{
@@ -34,6 +35,8 @@ fct_make_barfill(
 \item{pedia}{Booléen : le rapport est-il pédiatrique}
 
 \item{excl_orient_non_pec}{Booléen : Les patients réorientés/fugues/sortie sans ou contre avis médical doivent-ils être exclus ?}
+
+\item{palette_color_manual}{palette de couleur donnée à "value" dans "scale_fill_manual"}
 }
 \value{
 un plot et deux tables

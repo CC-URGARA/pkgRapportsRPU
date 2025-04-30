@@ -37,12 +37,13 @@ fct_duree_passage <- function(base_groupe, titre_tab, excl_orient_non_pec){
   # plot
   plot <- ggplot(tab_plot_limit, aes(x=NOM_ETAB, y=y_heure)) +
     geom_segment(aes(x=NOM_ETAB, xend=NOM_ETAB, y=med_groupe, yend=y_heure, alpha = effectif_bas)) +
-    geom_hline(aes(yintercept = med_groupe, color = "M\u00e9diane du groupe"), linewidth = 2) +
+    geom_hline(aes(yintercept = med_groupe, color = "M\u00e9diane du groupe"), linewidth = 1) +
     geom_point(aes(color=etab_actif, alpha = effectif_bas), size=4, show.legend = F) +
-    scale_color_manual(name = "", values = c("0" = col_glob, "1" = col_etab, "M\u00e9diane du groupe" = "#0070C0"),
+    scale_color_manual(name = "", values = c("0" = col_glob, "1" = col_etab, "M\u00e9diane du groupe" = col_secblue),
                        breaks = c("M\u00e9diane du groupe")) +
     scale_y_continuous(name = "Dur\u00e9e m\u00e9diane de passage (h)", breaks = seq(0, 500, by = 1),
                        limits = c(0, 24)) +
+    scale_x_discrete(name = "Etablissement") +
     scale_alpha_manual(values = c("TRUE" = 0.25, "FALSE" = 1)) +
     coord_cartesian(ylim = c(0, min(c(24, max(tab_plot_limit$y_heure) + 1)))) +
     guides(alpha = "none") +
@@ -60,7 +61,7 @@ fct_duree_passage <- function(base_groupe, titre_tab, excl_orient_non_pec){
     filter(etab_actif %in% "1") %>%
     summarise(Groupe = "Service",
               N = fct_f_big(n()),
-              "M\u00e9diane" = fct_min_as_hour(round(quantile(duree_passage_min, na.rm = T, probs = 0.5))),
+              med = fct_min_as_hour(round(quantile(duree_passage_min, na.rm = T, probs = 0.5))),
               "Q25%" = fct_min_as_hour(round(quantile(duree_passage_min, na.rm = T, probs = 0.25))),
               "Q75%" = fct_min_as_hour(round(quantile(duree_passage_min, na.rm = T, probs = 0.75))),
               Minimum = fct_min_as_hour(round(min(duree_passage_min, na.rm = T))),
@@ -73,7 +74,7 @@ fct_duree_passage <- function(base_groupe, titre_tab, excl_orient_non_pec){
   tab_group <- base_groupe %>%
     summarise(Groupe = "Groupe",
               N = fct_f_big(n()),
-              "M\u00e9diane" = fct_min_as_hour(round(quantile(duree_passage_min, na.rm = T, probs = 0.5))),
+              med = fct_min_as_hour(round(quantile(duree_passage_min, na.rm = T, probs = 0.5))),
               "Q25%" = fct_min_as_hour(round(quantile(duree_passage_min, na.rm = T, probs = 0.25))),
               "Q75%" = fct_min_as_hour(round(quantile(duree_passage_min, na.rm = T, probs = 0.75))),
               Minimum = fct_min_as_hour(round(min(duree_passage_min, na.rm = T))),
@@ -84,7 +85,7 @@ fct_duree_passage <- function(base_groupe, titre_tab, excl_orient_non_pec){
                                      fct_min_as_hour(Maximum))))
 
   tab_glob <- bind_rows(tab_etab, tab_group) %>%
-    kbl(caption = titre_tab, col.names = c("", "N", "M\u00e9diane", "Q25%", "Q75%", "Minimum", "Maximum"),
+    kbl(caption = titre_tab, col.names = c("", "N", "M\u00e9diane (Q50%)", "Q25%", "Q75%", "Minimum", "Maximum"),
         align = "c", format = "latex") %>%
     kable_classic_2() %>%
     kable_styling(latex_options = c("HOLD_position"))

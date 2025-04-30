@@ -83,3 +83,46 @@ fct_nb_presents <- function(d_entree, d_sortie, heure, avg_etab = FALSE, id_etab
 
 
 
+
+#' Controle les modalités d'une variable
+#'
+#' @param var Vecteur contenant la variable à controler
+#' @param val_autor Vecteur des valeurs autorisées
+#' @param lab Nom de la variable à imprimer dans le retour d'info
+#'
+#' @returns vecteur contenant var corrigé en "NC" pour les données Non Conformes
+#' @export
+#'
+fct_format_control <- function(var, val_autor, lab){
+  var_ok = ifelse(is.na(var), NA,
+                  ifelse(!var %in% val_autor, "NC", var))
+  n_corrige = sum(var_ok %in% "NC")
+  if(n_corrige != 0){warning(paste(n_corrige, "formats corrig\u00e9s pour la variable", lab))}
+  return(var_ok)
+}
+
+
+
+
+#' Convertir jpeg en ggplot
+#'
+#' Utilisée pour convertir une image en ggplot afin de pouvoir ajouter le logo + macaron qualité de la données
+#'
+#' @param path Chemin vers le fichier jpeg
+#'
+#' @importFrom jpeg readJPEG
+#' @importFrom ggpubr background_image
+#' @importFrom ggplot2 ggplot
+#'
+#' @returns ggplot
+#' @export
+#'
+fct_jpeg_ggplot <- function(path){
+  bg = readJPEG(path)
+
+  plot = ggplot(NULL) +
+    background_image(bg)
+
+  return(plot)
+}
+

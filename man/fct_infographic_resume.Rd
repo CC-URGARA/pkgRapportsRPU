@@ -4,7 +4,13 @@
 \alias{fct_infographic_resume}
 \title{Infographic nid d'abeille}
 \usage{
-fct_infographic_resume(base, pediatrique = FALSE, tab_activite, type)
+fct_infographic_resume(
+  base,
+  pediatrique = FALSE,
+  tab_activite,
+  type,
+  excl_orient_non_pec
+)
 }
 \arguments{
 \item{base}{RPU (établissement ou groupe)}
@@ -14,6 +20,8 @@ fct_infographic_resume(base, pediatrique = FALSE, tab_activite, type)
 \item{tab_activite}{Valeur retournée par la fonction}
 
 \item{type}{character : Etab ou Groupe selon si la base fournie est celle du groupe ou de l'étab}
+
+\item{excl_orient_non_pec}{Booléen : Les fugues, réorientations, partis sans attendre et sorties contre avis doivent-il être exclus des délais et diag ?}
 }
 \value{
 Un graphique

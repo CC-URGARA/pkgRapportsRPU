@@ -27,7 +27,7 @@ fct_create_icon_qual_folder = function(path){
     ggsave(plot = fct_make_icon_qual(p),
            filename = paste0("iconQualData_", p, ".png"),
            path = path_folder_icon,
-           height = 70, width = 70, units = "px", dpi = 70)
+           height = 0.5, width = 1, units = "cm", dpi = 300)
   }
 
 }
@@ -42,6 +42,7 @@ fct_create_icon_qual_folder = function(path){
 #' @import ggplot2
 #' @importFrom grDevices colorRampPalette
 #' @importFrom dplyr tibble
+#' @importFrom grid roundrectGrob gpar unit
 #'
 fct_make_icon_qual <- function(p){
   if(!is.numeric(p)){stop("p doit etre numeric")}
@@ -61,9 +62,17 @@ fct_make_icon_qual <- function(p){
 
 
   plot_icon = ggplot(tibble()) +
-    geom_point(aes(x = 0, y = 0), color = bg_col, size = 30) +
-    geom_text(aes(label = lab, x = 0, y = 0), color = "white", size = 6) +
-    coord_cartesian(xlim = c(-1, 1), ylim = c(-1, 1)) +
+    annotation_custom(
+      grob = roundrectGrob(x = 0, y = 0, width = 6.3, height = 3.3, r = unit(0.3, "npc"), gp = gpar(fill = "white", col = NA)),
+      xmin = -0, xmax = 1, ymin = -0, ymax = 1
+    ) +
+    annotation_custom(
+      grob = roundrectGrob(x = 0, y = 0, width = 6, height = 3, r = unit(0.3, "npc"), gp = gpar(fill = bg_col, col = NA)),
+      xmin = -0, xmax = 1, ymin = -0, ymax = 1
+    ) +
+    geom_text(aes(label = lab, x = 0, y = 0), color = "white", size = 3,
+              fontface = "bold", hjust = 0.5, vjust = 0.5) +
+    coord_cartesian(xlim = c(-3, 3), ylim = c(-2.5, 2.5)) +
     theme_void() +
     theme(
       panel.background = element_rect(fill = "transparent", colour = NA),
