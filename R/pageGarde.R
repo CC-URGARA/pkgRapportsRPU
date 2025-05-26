@@ -9,6 +9,7 @@
 #' @param nom_etab character : Nom de l'établissement
 #' @param date_debut character DMY : date de début du rapport
 #' @param date_fin character DMY : date de fin du rapport
+#' @param type Character : Sera mis en deuxième ligne du titre (ex : quadrimestriel/annuel)
 #'
 #' @returns un plot
 #' @export
@@ -21,7 +22,7 @@
 #' @importFrom dplyr tibble
 #' @importFrom sysfonts font_add
 #'
-fct_pageGarde <- function(nom_etab, date_debut, date_fin){
+fct_pageGarde <- function(nom_etab, date_debut, date_fin, type){
   #Fond de la page de garde
   img <- readPNG(system.file("img/Page_garde_vierge.png", package = "pkgRapportsRPU"))
 
@@ -46,7 +47,7 @@ fct_pageGarde <- function(nom_etab, date_debut, date_fin){
     background_image(img) +
     geom_text(aes(label = "Rapport", x = 102, y = 28), color = "white", size = 17, hjust = 1,
               fontface = "bold", family = "CO_bold") +
-    geom_text(aes(label = "quadrimestriel", x = 102, y = 20), color = "white", size = 17, hjust = 1,
+    geom_text(aes(label = type, x = 102, y = 20), color = "white", size = 17, hjust = 1,
               fontface = "bold", family = "CO_bold") +
     geom_text(aes(label = lab_date, x = 102, y = 11), color = "white", size = 13, hjust = 1,
               fontface = "bold", family = "CO_bold") +

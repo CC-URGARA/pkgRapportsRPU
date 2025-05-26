@@ -20,7 +20,7 @@
 fct_make_barplot <- function(base_groupe, var_interet,
                              ylab = "", titre_graph = "",
                              titre_tab = "", lab_var_tab = ""){
-  lab_etab <- unique(base_groupe$NOM_ETAB[base_groupe$etab_actif %in% "1"])
+  # lab_etab <- unique(base_groupe$NOM_ETAB[base_groupe$etab_actif %in% "1"])
   lab_groupe <- unique(base_groupe$group)
 
   #calcule des chiffres du graph
@@ -61,6 +61,7 @@ fct_make_barplot <- function(base_groupe, var_interet,
     select(var_interet = all_of(var_interet)) %>%
     summarise(Groupe = "Service",
               "Nombre de passages" = format(n(), big.mark = " "),
+              "Dont renseign\u00e9s" = format(sum(!is.na(var_interet)), big.mark = " "),
               var_interet = paste0(format(sum(var_interet, na.rm = T), big.mark = " "), " (",
                                    round(mean(var_interet, na.rm = T)*100, 1), "%)"))
 
@@ -69,18 +70,25 @@ fct_make_barplot <- function(base_groupe, var_interet,
     summarise(
       Groupe = "Groupe",
       "Nombre de passages" = format(n(), big.mark = " "),
+      "Dont renseign\u00e9s" = format(sum(!is.na(var_interet)), big.mark = " "),
       var_interet = paste0(format(sum(var_interet, na.rm = T), big.mark = " "), " (",
                            round(mean(var_interet, na.rm = T)*100, 1), "%)"))
 
-  tab_glob <- bind_rows(tab_etab, tab_group) %>%
-    kbl(caption = titre_tab, col.names = c("", "Nombre de\npassages", lab_var_tab),
+  if(sum(base_groupe$etab_actif == 1, na.rm = T) > 0){
+    tab_glob <-  bind_rows(tab_etab, tab_group)
+  } else {
+    tab_glob <- tab_group
+  }
+
+  tab_glob_kbl <- tab_glob %>%
+    kbl(caption = titre_tab, col.names = c("", "Nombre de\npassages", "Dont renseign\u00e9s", lab_var_tab),
         align = "c", format = "latex") %>%
     kable_classic_2() %>%
     kable_styling(latex_options = c("HOLD_position"))
 
 
   return(list(plot = plot,
-              data = tab_glob))
+              data = tab_glob_kbl))
 }
 
 
@@ -103,7 +111,6 @@ fct_make_barplot_age <- function(base_groupe, titre_tab = ""){
     mutate(age_geq75_adult = if_else(as.numeric(age) >= 18, age_geq75, NA))
 
   #récupération nom etab/groupe
-  lab_etab <- unique(base_groupe$NOM_ETAB[base_groupe$etab_actif %in% "1"])
   lab_groupe <- unique(base_groupe$group)
 
   #calcule des chiffres du graph
@@ -155,9 +162,13 @@ fct_make_barplot_age <- function(base_groupe, titre_tab = ""){
               "Nombre de passages adultes" = format(sum(as.numeric(age) >= 18, na.rm = T), big.mark = " "),
               "Patients \u00e2g\u00e9s parmi les adultes" = paste0(format(sum(age_geq75_adult, na.rm = T), big.mark = " "), " (",
                                                          round(mean(age_geq75_adult, na.rm = T)*100, 1), "%)"))
+  if(sum(base_groupe$etab_actif == "1", na.rm = T) > 0){
+    tab_glob <-  bind_rows(tab_etab, tab_group)
+  } else {
+    tab_glob <- tab_group
+  }
 
-
-  tab_glob <- bind_rows(tab_etab, tab_group) %>%
+  tab_glob_kbl <- tab_glob %>%
     kbl(caption = titre_tab, col.names = c("", "Nombre de\npassages", "Patients \u00e2g\u00e9s", "Nombre de\npassages adultes", "Patients \u00e2g\u00e9s parmi\nles adultes"),
         align = "c", format = "latex") %>%
     kable_classic_2() %>%
@@ -165,7 +176,7 @@ fct_make_barplot_age <- function(base_groupe, titre_tab = ""){
 
 
   return(list(plot = plot,
-              data = tab_glob))
+              data = tab_glob_kbl))
 }
 
 
@@ -455,3 +466,114 @@ fct_make_barfill <- function(base_etab, base_groupe, var_interet, label_var_inte
 
 
 
+#' barplot position fill par etablissement
+#'
+#' @param base_groupe RPU du groupe de l'établissement
+#' @param var_interet Character : Variable a représenter
+#' @param label_var_interet Nom de la variable à représenter
+#' @param grouping_var Nom de la variable de groupement (en axe y)
+#' @param label_grouping Label a afficher pour l'axe Y sur le graphique
+#' @param titre Titre du graphique
+#' @param make_table Booléen : Le tableau de données doit-il être généré
+#' @param na.rm Booléen : Retirer les données manquantes
+#' @param pedia Booléen : le rapport est-il pédiatrique
+#' @param excl_orient_non_pec Booléen : Les patients réorientés/fugues/sortie sans ou contre avis médical doivent-ils être exclus ?
+#' @param palette_color_manual palette de couleur donnée à "value" dans "scale_fill_manual"
+#' @param anonyme Boolèen : Les valeurs de la variable de groupement doivent-elles être cachées sur le graphique ?
+#'
+#' @returns un plot et deux tables
+#' @export
+#'
+#' @import dplyr
+#' @import ggplot2
+#' @importFrom ggpubr theme_pubclean
+#' @importFrom stats relevel na.omit
+#' @importFrom scales percent_format
+#' @importFrom stringr str_remove_all
+#'
+fct_make_barfill_par_etab <- function(base_groupe, var_interet, label_var_interet,
+                                      grouping_var, label_grouping, titre = "",
+                                      make_table = FALSE, na.rm = FALSE, pedia, excl_orient_non_pec = F,
+                                      palette_color_manual = NULL, anonyme = TRUE){
+  # renommage de la variable à ploter afin de pouvoir l'invoquer plus facilement par la suite
+  base <- base_groupe %>%
+    rename(var_interet = all_of(var_interet),
+           groupe = all_of(grouping_var))
+
+  #Suppression des FUGUE REO SCAM et PSA si excl_orient_non_pec = T
+  if(excl_orient_non_pec){
+    base = base %>%
+      filter(!ORIENTATION %in% c("FUGUE", "REO", "PSA", "SCAM"))
+  }
+
+  #Gestion des NC
+  if(na.rm){
+    base$var_interet = recode_factor(base$var_interet, "NC" = NA_character_)
+  }
+
+  #Table du plot
+  tab_plot <- base %>%
+    group_by(var_interet,
+             groupe, .drop = F) %>%
+    count() %>%
+    na.omit() %>%
+    ungroup(var_interet) %>%
+    mutate(p = round(n/sum(n)*100),
+           groupe_lab = paste0(groupe, "\n(n = ", fct_f_big(sum(n)), ")"))
+
+  #plot
+  plot <- ggplot(tab_plot, aes(x = groupe_lab, y = n, fill = var_interet)) +
+    geom_col(position = position_fill(reverse = T), alpha = 0.9) +
+    scale_fill_manual(values = pal_UrgAra(),
+                      limits = levels(tab_plot$var_interet),
+                      name = label_var_interet) +
+    scale_y_continuous(name = "Pourcentage de patients", breaks = seq(0, 1, by = 0.1), labels = percent_format(accuracy = 1, suffix = "")) +
+    scale_x_discrete(name = label_grouping) +
+    coord_flip() +
+    guides(fill = guide_legend(nrow = 1)) +
+    labs(title = titre) +
+    theme_pubclean() +
+    theme(legend.position = "bottom",
+          axis.text.y = element_text(hjust = 0.5),
+          panel.background = element_rect(fill='transparent'),
+          plot.background = element_rect(fill='transparent', color=NA)) #transparent plot bg
+
+  if(anonyme){  #Anonymisation
+    plot = plot +
+      theme(
+        axis.text.y = element_blank(),
+        axis.ticks = element_blank())
+  }
+
+  if(!is.null(palette_color_manual)){#Changement de la palette de couleur pour une manuelle
+    plot = plot + scale_fill_manual(name = label_var_interet,
+                                    values = palette_color_manual)
+  }
+
+  #table retournée à la fin
+  if(!make_table){
+    tab = NULL
+  } else {
+    #adulte
+    tab_n = table(base$var_interet)
+    tab_p = round(prop.table(tab_n)*100, 1)
+
+    tab = paste0(trimws(format(tab_n, big.mark = " ")), " (",
+                 tab_p, "%)") %>%
+      str_remove_all(" \\(NaN%\\)") %>%
+      as.data.frame() %>%
+      t()
+    rownames(tab) = "Groupe"
+    colnames(tab) = names(tab_n)
+
+    if(na.rm){
+      nNA = format(sum(is.na(base$var_interet)), big.mark = " ")
+      tab = cbind(tab, "NC" = nNA)
+    }
+  }
+
+  return(
+    list(plot = plot,
+         data = tab)
+  )
+}

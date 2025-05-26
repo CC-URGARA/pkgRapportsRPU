@@ -4,7 +4,7 @@
 \alias{fct_pageGarde}
 \title{Page de garde}
 \usage{
-fct_pageGarde(nom_etab, date_debut, date_fin)
+fct_pageGarde(nom_etab, date_debut, date_fin, type)
 }
 \arguments{
 \item{nom_etab}{character : Nom de l'établissement}
@@ -12,6 +12,8 @@ fct_pageGarde(nom_etab, date_debut, date_fin)
 \item{date_debut}{character DMY : date de début du rapport}
 
 \item{date_fin}{character DMY : date de fin du rapport}
+
+\item{type}{Character : Sera mis en deuxième ligne du titre (ex : quadrimestriel/annuel)}
 }
 \value{
 un plot

@@ -61,6 +61,7 @@ fct_duree_passage <- function(base_groupe, titre_tab, excl_orient_non_pec){
     filter(etab_actif %in% "1") %>%
     summarise(Groupe = "Service",
               N = fct_f_big(n()),
+              N_noNA = fct_f_big(sum(!is.na(duree_passage_min))),
               med = fct_min_as_hour(round(quantile(duree_passage_min, na.rm = T, probs = 0.5))),
               "Q25%" = fct_min_as_hour(round(quantile(duree_passage_min, na.rm = T, probs = 0.25))),
               "Q75%" = fct_min_as_hour(round(quantile(duree_passage_min, na.rm = T, probs = 0.75))),
@@ -74,6 +75,7 @@ fct_duree_passage <- function(base_groupe, titre_tab, excl_orient_non_pec){
   tab_group <- base_groupe %>%
     summarise(Groupe = "Groupe",
               N = fct_f_big(n()),
+              N_noNA = fct_f_big(sum(!is.na(duree_passage_min))),
               med = fct_min_as_hour(round(quantile(duree_passage_min, na.rm = T, probs = 0.5))),
               "Q25%" = fct_min_as_hour(round(quantile(duree_passage_min, na.rm = T, probs = 0.25))),
               "Q75%" = fct_min_as_hour(round(quantile(duree_passage_min, na.rm = T, probs = 0.75))),
@@ -84,8 +86,14 @@ fct_duree_passage <- function(base_groupe, titre_tab, excl_orient_non_pec){
                                      paste(round(Maximum/1440, 1), "jours"),
                                      fct_min_as_hour(Maximum))))
 
-  tab_glob <- bind_rows(tab_etab, tab_group) %>%
-    kbl(caption = titre_tab, col.names = c("", "N", "M\u00e9diane (Q50%)", "Q25%", "Q75%", "Minimum", "Maximum"),
+  if(sum(base_groupe$etab_actif == 1, na.rm = T) > 0){
+    tab_glob <-  bind_rows(tab_etab, tab_group)
+  } else {
+    tab_glob <- tab_group
+  }
+
+  tab_glob_kbl <- tab_glob %>%
+    kbl(caption = titre_tab, col.names = c("", "N", "Dont renseign\u00e9s", "M\u00e9diane (Q50%)", "Q25%", "Q75%", "Minimum", "Maximum"),
         align = "c", format = "latex") %>%
     kable_classic_2() %>%
     kable_styling(latex_options = c("HOLD_position"))
@@ -93,6 +101,6 @@ fct_duree_passage <- function(base_groupe, titre_tab, excl_orient_non_pec){
   #export
   return(list(
     plot = plot,
-    data = tab_glob,
+    data = tab_glob_kbl,
     med_etab = tab_plot$y_heure[tab_plot$etab_actif == "1"]))
 }
