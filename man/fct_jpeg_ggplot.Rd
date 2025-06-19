@@ -4,10 +4,12 @@
 \alias{fct_jpeg_ggplot}
 \title{Convertir jpeg en ggplot}
 \usage{
-fct_jpeg_ggplot(path)
+fct_jpeg_ggplot(path, compression = "50\%")
 }
 \arguments{
 \item{path}{Chemin vers le fichier jpeg}
+
+\item{compression}{char : Argument geometry utilisé dans magick::image_resize. geometry = "50\%" par défaut}
 }
 \value{
 ggplot

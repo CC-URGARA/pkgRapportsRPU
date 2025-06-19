@@ -109,20 +109,21 @@ fct_format_control <- function(var, val_autor, lab){
 #' Utilisée pour convertir une image en ggplot afin de pouvoir ajouter le logo + macaron qualité de la données
 #'
 #' @param path Chemin vers le fichier jpeg
+#' @param compression char : Argument geometry utilisé dans magick::image_resize. geometry = "50%" par défaut
 #'
-#' @importFrom jpeg readJPEG
+#' @importFrom magick image_read image_resize
 #' @importFrom ggpubr background_image
 #' @importFrom ggplot2 ggplot
 #'
 #' @returns ggplot
 #' @export
 #'
-fct_jpeg_ggplot <- function(path){
-  bg = readJPEG(path)
+fct_jpeg_ggplot <- function(path, compression = "50%"){
+  bg = image_read(path) %>%
+    image_resize(geometry = compression, filter = "Triangle") # Optionnel : filtre plus léger
 
   plot = ggplot(NULL) +
     background_image(bg)
 
   return(plot)
 }
-
