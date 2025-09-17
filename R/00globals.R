@@ -18,7 +18,8 @@ globalVariables(unique(c(
   # fct_duree_passage:
   "duree_passage_min", "Maximum", "y_heure",
   # fct_infographic_resume:
-  "activite", "size", "x",
+  "activite", "size", "x", "Thesaurus_Fedoru", "diagnostic_code",
+  "type_urgence_libelle", "val_indicateur",
   # fct_tab_diag:
   "DP_lab", "DP_recod", "n_p",
   # fct_make_barplot_age:

@@ -333,3 +333,114 @@ fct_calc_indic_evol = function(RPU, group_by = "etab", excl_orient_non_pec = TRU
 
 
 
+#' Inforgraphie description des personnes âgées
+#'
+#' @param RPU Une table au format RPU utilisé dans les rapports (non filtré sur les PA)
+#' @param nb_PA_region Nombre de personnes âgées en ARA à afficher dans le graphique
+#' @param lab_annee label des années à afficher. Calculé automatiquement sur les données si "NULL"
+#' @returns Un ggplot
+#' @export
+#'
+#' @importFrom png readPNG
+#' @importFrom lubridate date wday
+#' @importFrom stats median
+#' @import dplyr
+#' @import ggplot2
+#'
+fct_infographic_descript_PA = function(RPU, nb_PA_region, lab_annee = NULL){
+  #Chargement du fond de plot
+  img <- readPNG(system.file("img/infog_descript_PA_vierge.png", package = "pkgRapportsRPU"))
+
+  #Selection des PA
+  RPU_PA = RPU %>%
+    filter(age_geq75) %>%
+    left_join(Thesaurus_Fedoru %>% select(diagnostic_code, type_urgence_libelle) %>% unique,
+              by = c("DP_clean" = "diagnostic_code"), relationship = "many-to-one")
+
+  #Calcul des informations à afficher dans le plot
+  ##calc lab_annee
+  lab_annee = ifelse(!is.null(lab_annee), lab_annee, paste(unique(range(RPU_PA$annee)), sep = "-"))
+
+  ##tab des indicateurs
+  nb_jours = length(unique(date(RPU_PA$ENTREE)))
+  tab_info_graph = tibble(
+    #Donnes regionales
+    # lab_annee = lab_annee,
+    nb_PA_region = fct_f_big(as.numeric(nb_PA_region)),
+    nb_RPU_PA = fct_f_big(nrow(RPU_PA)),
+    part_PA = paste0(round(nrow(RPU_PA)/nrow(RPU)*100, 1), "%"),
+    moy_quot_passages = fct_f_big(round(nrow(RPU_PA)/nb_jours)),
+    moy_present_15h = fct_f_big(fct_nb_presents(d_entree = RPU_PA$ENTREE, d_sortie = RPU_PA$SORTIE,
+                                                heure = 15)),
+    moy_present_6h = fct_f_big(fct_nb_presents(d_entree = RPU_PA$ENTREE, d_sortie = RPU_PA$SORTIE,
+                                                      heure = 6)),
+    #mode de sortie
+    tx_hpt = paste0(round(mean(RPU_PA$hospit, na.rm = T)*100, 1), "%"),
+    tx_mut = paste0(round(mean(RPU_PA$MODE_SORTIE == "Mutation", na.rm = T)*100, 1), "%"),
+    tx_transf = paste0(round(mean(RPU_PA$MODE_SORTIE == "Transfert", na.rm = T)*100, 1), "%"),
+    tx_RAD = paste0(round(mean(RPU_PA$MODE_SORTIE == "Domicile", na.rm = T)*100, 1), "%"),
+
+    #DMS
+    med_duree_passage = fct_f_big(round(median(RPU_PA$duree_passage_min, na.rm = T))),
+    med_duree_passage_inf4h = paste0(round(mean(RPU_PA$duree_passage_min < 4*60, na.rm = T)*100, 1), "%"),
+
+    #Patients
+    sex_ratio = round(sum(RPU_PA$SEXE == "M", na.rm = T)/sum(RPU_PA$SEXE == "F", na.rm = T), 1),
+    moy_age = round(mean(RPU_PA$age, na.rm = T), 1),
+    age_sup90 = paste0(round(mean(RPU_PA$age > 90, na.rm = T)*100, 1), "%"),
+
+    #Arrivée
+    tx_nuit = paste0(round(mean(RPU_PA$H_ENTREE >= 20 | RPU_PA$H_ENTREE < 8, na.rm = T)*100, 1), "%"),
+    tx_weekend = paste0(round(mean(wday(RPU_PA$ENTREE, week_start = 1) %in% c(6, 7))*100, 1), "%"),
+    tx_TRANS_PERSO = paste0(round(mean(RPU_PA$TRANSPORT == "PERSO", na.rm = T)*100, 1), "%"),
+    tx_TRANS_SANI = paste0(round(mean(RPU_PA$TRANSPORT != "PERSO", na.rm = T)*100, 1), "%"),
+    tx_CCMU1_2 = paste0(round(mean(RPU_PA$GRAVITE == "1" | RPU_PA$GRAVITE == "2", na.rm = T)*100, 1), "%"),
+
+    #DP
+    tx_DP_medicochir = paste0(round(mean(RPU_PA$type_urgence_libelle == "M\u00e9dico-chirurgical", na.rm = T)*100, 1), "%"),
+    tx_DP_trauma = paste0(round(mean(RPU_PA$type_urgence_libelle == "Traumatologique", na.rm = T)*100, 1), "%"),
+    tx_DP_psy = paste0(round(mean(RPU_PA$type_urgence_libelle == "Psychiatrique", na.rm = T)*100, 1), "%"),
+    tx_DP_toxico = paste0(round(mean(RPU_PA$type_urgence_libelle == "Toxicologique", na.rm = T)*100, 1), "%"),
+    tx_DP_autre = paste0(round(mean(RPU_PA$type_urgence_libelle == "Autre recours", na.rm = T)*100, 1), "%")
+  )
+
+  #Définition des coordonnées dans le plot
+  tab_coord_chiffres <-
+    tibble(Indicateur = c("nb_PA_region", "nb_RPU_PA", "part_PA", "moy_quot_passages", "moy_present_15h", "moy_present_6h",
+                          "tx_hpt", "tx_mut", "tx_transf", "tx_RAD",
+                          "med_duree_passage", "med_duree_passage_inf4h",
+                          "sex_ratio", "moy_age", "age_sup90",
+                          "tx_nuit", "tx_weekend", "tx_TRANS_PERSO", "tx_TRANS_SANI", "tx_CCMU1_2",
+                          "tx_DP_medicochir", "tx_DP_trauma", "tx_DP_psy", "tx_DP_toxico", "tx_DP_autre"),
+           x = c(rep(-74, 6),
+                 rep(-76, 4),
+                 rep(-71.2, 2),
+                 rep(45, 3),
+                 rep(58, 5),
+                 rep(40.5, 5)),
+           y = c(51.5, 46, 40.5, 35.1, 29.5, 24.1,
+                 -11.9, -17.3, -23, -28.4,
+                 -73.9, -79.6,
+                 54.7, 49.2, 43.8,
+                 -1.9, -7.5, -18.9, -24.2, -35.7,
+                 -76.7, -82.2, -87.6, -93.1, -98.6))
+
+  #Création des labels à mettre sur le plot + merge avec les coordonnées
+  tab_plot = tab_info_graph %>%
+    mutate_all(as.character) %>%
+    pivot_longer(everything(), names_to = "Indicateur", values_to = "val_indicateur") %>%
+    right_join(tab_coord_chiffres, by = "Indicateur")
+
+  #Création du plot
+  plot_descript_PA <- ggplot(tab_plot, aes(x = x, y = y)) +
+    background_image(img) +
+    geom_text(aes(label = val_indicateur), size = 2, hjust = 1, color = "#345885") +
+    annotate(geom = "text", label = lab_annee, x = -17, y = 60,
+             size = 3.9, hjust = 1, color = "#345885", fontface = "bold") +
+    scale_size_continuous(range = c(3, 10)) +
+    coord_cartesian(xlim = c(-100, 100), ylim = c(-100,100)) +
+    theme_void() +
+    theme(legend.position = "none")
+
+  return(plot_descript_PA)
+}
