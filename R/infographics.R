@@ -344,6 +344,7 @@ fct_calc_indic_evol = function(RPU, group_by = "etab", excl_orient_non_pec = TRU
 #' @importFrom png readPNG
 #' @importFrom lubridate date wday
 #' @importFrom stats median
+#' @importFrom purrr map_df
 #' @import dplyr
 #' @import ggplot2
 #'
@@ -359,10 +360,10 @@ fct_infographic_descript_PA = function(RPU, nb_PA_region, lab_annee = NULL){
 
   #Calcul des informations à afficher dans le plot
   ##calc lab_annee
-  lab_annee = ifelse(!is.null(lab_annee), lab_annee, paste(unique(range(RPU_PA$annee)), sep = "-"))
+  lab_annee = ifelse(!is.null(lab_annee), lab_annee, paste(unique(range(RPU$annee)), sep = "-"))
 
   ##tab des indicateurs
-  nb_jours = length(unique(date(RPU_PA$ENTREE)))
+  nb_jours = length(unique(date(RPU$ENTREE)))
   tab_info_graph = tibble(
     #Donnes regionales
     # lab_annee = lab_annee,
@@ -403,6 +404,11 @@ fct_infographic_descript_PA = function(RPU, nb_PA_region, lab_annee = NULL){
     tx_DP_toxico = paste0(round(mean(RPU_PA$type_urgence_libelle == "Toxicologique", na.rm = T)*100, 1), "%"),
     tx_DP_autre = paste0(round(mean(RPU_PA$type_urgence_libelle == "Autre recours", na.rm = T)*100, 1), "%")
   )
+  #correction des données non calculables en NC
+  tab_info_graph <- map_df(tab_info_graph, function(col){
+    if_else(is.na(col) | is.nan(col) |
+              grepl("NA", col)| grepl("NaN", col), "NC", as.character(col))
+    })
 
   #Définition des coordonnées dans le plot
   tab_coord_chiffres <-
