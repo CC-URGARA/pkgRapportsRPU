@@ -355,6 +355,11 @@ fct_infographic_descript_PA = function(RPU, nb_PA_region, lab_annee = NULL){
   #Selection des PA
   RPU_PA = RPU %>%
     filter(age_geq75) %>%
+    mutate(
+      across(c(GRAVITE, TRANSPORT, SEXE, MODE_SORTIE), function(col){
+        if_else(col %in% c("NC", "I"), NA_character_, as.character(col))
+      })
+    ) %>%
     left_join(Thesaurus_Fedoru %>% select(diagnostic_code, type_urgence_libelle) %>% unique,
               by = c("DP_clean" = "diagnostic_code"), relationship = "many-to-one")
 
